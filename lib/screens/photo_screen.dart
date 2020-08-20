@@ -62,7 +62,6 @@ class _FullScreenImageState extends State<FullScreenImage> {
           },
         ),
         backgroundColor: Colors.white,
-        shadowColor: Colors.transparent,
       ),
       body: _buildBody(),
     );
