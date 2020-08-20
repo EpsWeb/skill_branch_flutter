@@ -49,6 +49,8 @@ class _FeedScreenState extends State<FeedScreen> {
                 MaterialPageRoute(
                     builder: (context) => FullScreenImage(
                           photo: kFlutterDash,
+                          name: 'Daniel Epel',
+                          userName: 'danielepel',
                           altDescription:
                               'Beatiful girl in a yellow dress with a flower on her head in the summer in the forest Beatiful girl in a yellow dress with a flower on her head in the summer in the forest Beatiful girl in a yellow dress with a flower on her head in the summer in the forest Beatiful girl in a yellow dress with a flower on her head in the summer in the forest Beatiful girl in a yellow dress with a flower on her head in the summer in the forest',
                         )));

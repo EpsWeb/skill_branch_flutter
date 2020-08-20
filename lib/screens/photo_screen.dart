@@ -106,8 +106,8 @@ class _FullScreenImageState extends State<FullScreenImage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildText(name: 'Daniel Epel'),
-              _buildText(nickName: 'danielepel'),
+              _buildText(name: name != null ? name : 'Daniel Epel'),
+              _buildText(nickName: userName != null ? userName : 'danielepel'),
             ],
           ),
         ],
@@ -140,7 +140,6 @@ class _FullScreenImageState extends State<FullScreenImage> {
     );
   }
 
-  // todo
   Widget _buildButton(String text) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
