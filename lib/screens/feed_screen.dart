@@ -40,17 +40,23 @@ class _FeedScreenState extends State<FeedScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          child: Photo(
-            photoLink: kFlutterDash,
+          child: Hero(
+            tag: 'hero-full-screen-page-$index',
+            child: Photo(
+              photoLink: kFlutterDash,
+            ),
           ),
           onTap: () {
             Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => FullScreenImage(
+                          heroTag: 'hero-full-screen-page-$index',
                           photo: kFlutterDash,
                           name: 'Daniel Epel',
                           userName: 'danielepel',
+                          userPhoto:
+                              'https://skill-branch.ru/img/speakers/Adechenko.jpg',
                           altDescription:
                               'Beatiful girl in a yellow dress with a flower on her head in the summer in the forest Beatiful girl in a yellow dress with a flower on her head in the summer in the forest Beatiful girl in a yellow dress with a flower on her head in the summer in the forest Beatiful girl in a yellow dress with a flower on her head in the summer in the forest Beatiful girl in a yellow dress with a flower on her head in the summer in the forest',
                         )));

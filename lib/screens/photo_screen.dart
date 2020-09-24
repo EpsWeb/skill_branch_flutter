@@ -8,151 +8,232 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class FullScreenImage extends StatefulWidget {
+  FullScreenImage(
+      {this.photo = '',
+      this.altDescription = '',
+      this.name = '',
+      this.userName = '',
+      Key key,
+      this.heroTag = '',
+      this.userPhoto = ''})
+      : super(key: key);
+
   final String photo;
   final String altDescription;
-  final Key key;
-  final String userName;
   final String name;
-
-  FullScreenImage(
-      {this.photo, this.altDescription, this.userName, this.name, this.key})
-
-      : super(key: key);
+  final String userName;
+  final String userPhoto;
+  final String heroTag;
 
   @override
   State<StatefulWidget> createState() {
-    return _FullScreenImageState();
+    return FullScreenImageState();
   }
 }
 
-class _FullScreenImageState extends State<FullScreenImage> {
-  String photo;
-  String altDescription;
-  String userName;
-  String name;
+class FullScreenImageState extends State<FullScreenImage>
+    with TickerProviderStateMixin {
+  AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    this.name = widget.name != null ? widget.name : '';
-    this.userName = widget.userName != null ? widget.userName : '';
-    this.altDescription = widget.altDescription != null ? widget.altDescription : '';
-    this.photo = widget.photo != null ? widget.photo : '';
+
+    _controller = AnimationController(
+        duration: Duration(milliseconds: 1500), vsync: this);
+
+    _playAnimation();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _playAnimation() async {
+    try {
+      await _controller.forward().orCancel;
+
+      //  await _controller.reverse().orCancel;
+    } on TickerCanceled {
+      //анимация была отменена, тк была уничтожена
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // print(widget.heroTag);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: Text(
-            'Photo',
-            style: TextStyle(
-              color: AppColors.black,
+      appBar: _buildAppBar(context),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Hero(
+              // прилетающая картика с др страницы
+              tag: widget.heroTag,
+              child: Photo(
+                photoLink: widget.photo,
+              ),
             ),
+            Padding(
+              //описание под картинкой
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Text(
+                widget.altDescription,
+                maxLines: 3,
+                style: AppStyles.h3.copyWith(color: AppColors.grayChateau),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+
+            StaggerAnimation(
+              animationController: _controller,
+              name: widget.name,
+              userName: widget.userName,
+              userPhoto: widget.userPhoto,
+            ), // аватарка, имя, username анимация прозрачности
+
+            Row(
+              // строка с кнопками лайков и Text @ Visit
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                LikeButton(10, true), // кнопка с лайками
+                SizedBox(width: 12),
+                GestureDetector(
+                    //behavior: HitTestBehavior.opaque,
+                    onTap: () {},
+                    child: _buildButton('Text')),
+                SizedBox(width: 12),
+                GestureDetector(
+                  //behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                  child: _buildButton('Visit'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Widget _buildAppBar(context) {
+  return AppBar(
+    centerTitle: true,
+    title: Text(
+      'Photo',
+      style: AppStyles.h2Black,
+    ),
+    leading: IconButton(
+        icon: const Icon(CupertinoIcons.back),
+        onPressed: () {
+          Navigator.pop(context);
+        }),
+  );
+}
+
+Widget _buildButton(String text) {
+  //кнопки
+  return Container(
+    width: 105,
+    height: 36,
+    alignment: Alignment.center,
+    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+    // margin: EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      shape: BoxShape.rectangle,
+      color: AppColors.dodgerBlue,
+      borderRadius: BorderRadius.all(Radius.circular(7)),
+    ),
+
+    child: Text(
+      text,
+      style: AppStyles.h4.copyWith(color: AppColors.white),
+    ),
+  );
+}
+
+class StaggerAnimation extends StatelessWidget {
+  final Animation<double> opacityUserAvatar;
+  final Animation<double> opacityText;
+  final Animation<double> animationController;
+
+  final String name;
+  final String userName;
+  final String userPhoto;
+
+  StaggerAnimation(
+      {Key key,
+      this.animationController,
+      this.name,
+      this.userName,
+      this.userPhoto})
+      : opacityUserAvatar = Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(
+            parent: animationController,
+            curve: Interval(0.0, 0.5, curve: Curves.ease),
           ),
         ),
-        leading: IconButton(
-          icon: Icon(
-            CupertinoIcons.back,
-            color: AppColors.manatee,
+        opacityText = Tween<double>(begin: 0, end: 1.0).animate(
+          CurvedAnimation(
+            parent: animationController,
+            curve: Interval(0.5, 1.0, curve: Curves.ease),
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
         ),
-        backgroundColor: Colors.white,
-      ),
-      body: _buildBody(),
+        super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      builder: _buildPhotoMetaData,
+      animation: animationController,
     );
   }
 
-  Widget _buildBody() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Photo(
-          photoLink: kFlutterDash,
-        ),
-        _buildDescription(),
-        _buildUserInfo(),
-        _buildBottom(),
-      ],
-    );
-  }
+  Widget _buildPhotoMetaData(BuildContext context, Widget child) {
+    // ghjdthrf pyfxtybq
 
-  Widget _buildDescription() {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10),
-      child: Text(
-        altDescription,
-        maxLines: 3,
-        overflow: TextOverflow.ellipsis,
-        style: AppStyles.h3,
-      ),
-    );
-  }
-
-  Widget _buildUserInfo() {
+    // double a, b, c, d;
+    //   a = animationController.value;
+    //   b = opacityUserAvatar.value;
+    //   print('$a - OpacityUserAvatar $b');
+    //  c = animationController.value;
+    // d = opacityText.value;
+    //print('$c - opacityText $d');
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Row(
-        children: [
-          UserAvatar('https://skill-branch.ru/img/speakers/Adechenko.jpg'),
-          SizedBox(
-            width: 7,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildText(name: name != null ? name : 'Daniel Epel'),
-              _buildText(nickName: userName != null ? userName : 'danielepel'),
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              FadeTransition(
+                opacity: opacityUserAvatar,
+                child: UserAvatar(userPhoto),
+              ),
+              SizedBox(width: 6),
+              FadeTransition(
+                opacity: opacityText,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(name, style: AppStyles.h1Black),
+                    Text('@$userName',
+                        style: AppStyles.h5Black
+                            .copyWith(color: AppColors.manatee)),
+                  ],
+                ),
+              ),
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Text _buildText({String name, String nickName}) {
-    if (name != null) {
-      return Text(
-        name,
-        style: AppStyles.h1Black,
-      );
-    }
-    return Text(
-      '@' + nickName,
-      style: AppStyles.h5Black.copyWith(color: AppColors.manatee),
-    );
-  }
-
-  Widget _buildBottom() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        LikeButton(10, false),
-        _buildButton('Save'),
-        _buildButton('Visit'),
-      ],
-    );
-  }
-
-  Widget _buildButton(String text) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        print('Presss');
-      },
-      child: Container(
-        child: Center(child: Text(text, style: TextStyle(color: AppColors.white, fontWeight: FontWeight.w600),)),
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 40),
-        decoration: BoxDecoration(
-          color: AppColors.dodgerBlue,
-          borderRadius: BorderRadius.circular(7),
-        ),
       ),
     );
   }
