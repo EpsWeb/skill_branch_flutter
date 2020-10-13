@@ -1,11 +1,31 @@
 import 'package:FlutterGalleryApp/res/colors.dart';
 import 'package:FlutterGalleryApp/res/res.dart';
 import 'package:FlutterGalleryApp/screens/feed_screen.dart';
+import 'package:FlutterGalleryApp/widgets/claim_bottom_sheet.dart';
 import 'package:FlutterGalleryApp/widgets/like_button.dart';
 import 'package:FlutterGalleryApp/widgets/photo.dart';
 import 'package:FlutterGalleryApp/widgets/user_avatar.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver/gallery_saver.dart';
+
+class FullScreenImageArguments {
+  final String photo;
+  final String altDescription;
+  final String name;
+  final String userName;
+  final String userPhoto;
+  final String heroTag;
+  final Key key;
+
+  FullScreenImageArguments(
+      {this.photo,
+      this.altDescription,
+      this.name,
+      this.userName,
+      this.userPhoto,
+      this.heroTag,
+      this.key});
+}
 
 class FullScreenImage extends StatefulWidget {
   FullScreenImage(
@@ -106,13 +126,78 @@ class FullScreenImageState extends State<FullScreenImage>
                 SizedBox(width: 12),
                 GestureDetector(
                     //behavior: HitTestBehavior.opaque,
-                    onTap: () {},
+                    onTap: () {
+                      OverlayState overlayState = Overlay.of(context);
+
+                      OverlayEntry entry = OverlayEntry(builder: (context) {
+                        return Positioned(
+                          top: MediaQuery.of(context).viewInsets.top + 50,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              child: Container(
+                                alignment: Alignment.center,
+                                width: MediaQuery.of(context).size.width,
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 16),
+                                  margin: EdgeInsets.symmetric(horizontal: 20),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.mercury,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text('Skillbranch'),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      });
+                      overlayState.insert(entry);
+                    },
                     child: _buildButton('Text')),
                 SizedBox(width: 12),
                 GestureDetector(
                   //behavior: HitTestBehavior.opaque,
-                  onTap: () {},
-                  child: _buildButton('Visit'),
+                  onTap: () {
+                    TextStyle textStyleContent = Theme.of(context)
+                        .textTheme
+                        .headline6
+                        .copyWith(color: AppColors.black);
+                    TextStyle textStyleTitle = Theme.of(context)
+                        .textTheme
+                        .headline5
+                        .copyWith(color: AppColors.black);
+                    showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                              title: Text(
+                                "Downloading photos",
+                                style: textStyleTitle,
+                              ),
+                              content: Text(
+                                "Are you sure you want to upload a photo?",
+                                style: textStyleContent,
+                              ),
+                              actions: <Widget>[
+                                FlatButton(
+                                    onPressed: () {
+                                      GallerySaver.saveImage(widget.photo)
+                                          .then((bool success) {
+                                        Navigator.of(context).pop();
+                                      });
+                                    },
+                                    child: Text('Download')),
+                                FlatButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('Close')),
+                              ],
+                            ));
+                  },
+                  child: _buildButton('Save'),
                 ),
               ],
             ),
@@ -120,6 +205,13 @@ class FullScreenImageState extends State<FullScreenImage>
         ),
       ),
     );
+  }
+
+  void _download() {
+    GallerySaver.saveImage(widget.photo).then((bool success) {
+      print(success.toString());
+      Navigator.of(context).pop();
+    });
   }
 }
 
@@ -130,11 +222,30 @@ Widget _buildAppBar(context) {
       'Photo',
       style: AppStyles.h2Black,
     ),
-    leading: IconButton(
-        icon: const Icon(CupertinoIcons.back),
+    actions: [
+      IconButton(
+        icon: Icon(Icons.more_vert),
         onPressed: () {
-          Navigator.pop(context);
-        }),
+          showModalBottomSheet(
+              context: context,
+              builder: (context) {
+                return Container(child: ClaimBottomSheet());
+                // return Container(
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.center,
+                //     mainAxisSize: MainAxisSize.min,
+                //     children: List.generate(10, (index) => FlutterLogo()),
+                //   ),
+                // );
+              });
+        },
+      )
+    ],
+    // leading: IconButton(
+    //     icon: const Icon(CupertinoIcons.back),
+    //     onPressed: () {
+    //       Navigator.pop(context);
+    //     }),
   );
 }
 

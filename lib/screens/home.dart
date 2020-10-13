@@ -1,8 +1,16 @@
+import 'dart:async';
+
+import 'package:FlutterGalleryApp/main.dart';
 import 'package:FlutterGalleryApp/res/res.dart';
 import 'package:FlutterGalleryApp/screens/feed_screen.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
+  final Stream<ConnectivityResult> onConnectivityChanged;
+
+  Home(this.onConnectivityChanged);
+
   @override
   State<StatefulWidget> createState() {
     return _HomeState();
@@ -12,13 +20,44 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   List<Widget> pages = [FeedScreen(), Container(), Container()];
   int currentTab = 0;
+  StreamSubscription subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    subscription =
+        widget.onConnectivityChanged.listen((ConnectivityResult result) {
+      print('Result: ' + result.toString());
+      switch (result) {
+        case ConnectivityResult.wifi:
+          ConnectivityOverlay connectivityOverlay = ConnectivityOverlay();
+          connectivityOverlay.removeOverlay(context);
+          break;
+        case ConnectivityResult.mobile:
+          ConnectivityOverlay connectivityOverlay = ConnectivityOverlay();
+          connectivityOverlay.removeOverlay(context);
+          break;
+        case ConnectivityResult.none:
+          ConnectivityOverlay connectivityOverlay = ConnectivityOverlay();
+          connectivityOverlay.showOverlay(
+              context, Text('Internet connection is lost'));
+          break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: BottomNavyBar(
         itemCornerRadius: 8,
         curve: Curves.ease,
-        onItemSelected: (int index) {
+        onItemSelected: (int index) async {
+          // if (index == 1) {
+          //   var value = await Navigator.of(context)
+          //       .push(MaterialPageRoute(builder: (context) => DemoScreen()));
+          //   print(value);
+          // } else
           setState(() {
             currentTab = index;
           });
@@ -47,6 +86,12 @@ class _HomeState extends State<Home> {
       ),
       body: pages[currentTab],
     );
+  }
+
+  @override
+  void dispose() {
+    subscription.cancel();
+    super.dispose();
   }
 }
 
@@ -153,7 +198,7 @@ class _ItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: animationDuration,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       width: isSelected
           ? 150
           : (MediaQuery.of(context).size.width - 150 - 8 * 4 - 4 * 2) / 2,
