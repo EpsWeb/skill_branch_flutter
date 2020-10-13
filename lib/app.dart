@@ -13,7 +13,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: Theme.of(context).copyWith(textTheme: buildAppTextTheme()),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        textTheme: buildAppTextTheme(),
+      ),
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       home: Home(Connectivity().onConnectivityChanged),
