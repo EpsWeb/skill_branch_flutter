@@ -40,7 +40,7 @@ class _HomeState extends State<Home> {
         case ConnectivityResult.none:
           ConnectivityOverlay connectivityOverlay = ConnectivityOverlay();
           connectivityOverlay.showOverlay(
-              context, Text('Internet connection is lost'));
+              context, Text('No internet connection'));
           break;
       }
     });
